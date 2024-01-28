@@ -20,6 +20,23 @@ source .venv/bin/activate
 python3 ollamacord.py
 ```
 
+## Personalize
+
+### `models.json`
+
+This file contains the list of models with their configurations :
+
+- `"name"` - Name of model in ollama (mistral:latest, llama2, etc.).
+- `"channel"` - Name of channel in discord guild/server.
+- `"color"` - Color in hexadecimal of the left border of the 'message' in Discord (called an embed).
+- `"context"` - Prompt to send before all messages sent from Discord.
+
+This way, even with the same model you can do a channel `mistral-math` for math lessons and then a `mistral-code`, `mistral-discussion` and `mistral-mario`.
+
+### `ollamacord.py`
+
+The application source code, you can change the language as it is actually in French for help and if error from ollama.
+
 ## License
 
 This project is for educational purpose only. Under the GNU v3.0 [license](LICENSE).
