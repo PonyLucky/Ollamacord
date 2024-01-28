@@ -1,0 +1,14 @@
+[
+    {
+        "name": "mistral",
+        "channel": "mistral",
+        "color": "c82ff9",
+        "context": "The following is to be answered in markdown format. Please answer precisely and concisely. \n\n"
+    },
+    {
+        "name": "mixtral",
+        "channel": "mixtral",
+        "color": "f9cb2f",
+        "context": "The following is to be answered in markdown format. Please answer precisely and concisely in the language of the following. \n\n"
+    }
+]
