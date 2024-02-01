@@ -1,6 +1,8 @@
 from dotenv import dotenv_values
 import subprocess
 from json import load as json_load
+import os
+import requests
 import discord
 from discord.ext import commands
 
@@ -10,7 +12,7 @@ DISCORD_TOKEN = config['DISCORD_TOKEN']
 del config
 
 # Global variables
-DEBUG = False
+DEBUG = True
 COLOR_HELP = 0x42f933
 ERROR_MSG = 'Aucune réponse n\'a été reçue...\n' \
     'Cela peut être dû à une erreur ou à une question trop complexe.'
@@ -60,6 +62,29 @@ def form_help() -> discord.Embed:
     return embed
 
 
+def form_message(model: object, message: object) -> str:
+    """Form the message to send to the model."""
+    prompt = model['context'] + message.content
+    # Attachments support
+    if len(message.attachments) > 0:
+        os.makedirs('tmp', exist_ok=True)
+        files_lst = []
+        for attachment in message.attachments:
+            file = 'tmp/' + attachment.filename
+            r = requests.get(attachment.url)
+            with open(file, 'wb') as f:
+                f.write(r.content)
+            files_lst.append(file)
+        prompt += '\n'
+        for file in files_lst:
+            with open(file, 'r') as f:
+                prompt += f'\n```{f.read()}```'
+            os.remove(file)
+    if DEBUG:
+        print('Prompt:\n#####\n', prompt, '\n#####')
+    return prompt
+
+
 async def check_stop(message: str) -> bool:
     """Check if the message is `!stop` or `!quit`."""
     if message.content == '!stop' or message.content == '!quit':
@@ -86,7 +111,7 @@ async def check_clear(message: str) -> bool:
     return False
 
 
-async def check_model(message: str, model: object) -> bool:
+async def check_model(message: object, model: object) -> bool:
     """Check if the message is for a specific model."""
     # If channel is model
     if message.channel.name == model['channel']:
@@ -94,7 +119,7 @@ async def check_model(message: str, model: object) -> bool:
         # Ask model
         response = ask_ollama(
             model=model['name'],
-            prompt=model['context'] + message.content
+            prompt=form_message(model, message)
         )
 
         # Send answer
