@@ -31,11 +31,11 @@ This file contains the list of models with their configurations :
 - `"color"` - Color in hexadecimal of the left border of the 'message' in Discord (called an embed).
 - `"context"` - Prompt to send before all messages sent from Discord.
 
-This way, even with the same model you can do a channel `mistral-math` for math lessons and then a `mistral-code`, `mistral-discussion` and `mistral-mario`.
+This way, even with the same model you can do a channel `mistral-math` for math lessons and then a `mistral-code`, `mistral-minecraft-help`, etc.
 
 ### `ollamacord.py`
 
-The application source code, you can change the language as it is actually in French for help and if error from ollama.
+The application source code, you can change the language as it is in French for `help` method and if error from ollama in `ERROR_MSG` variable.
 
 ## License
 
