@@ -5,6 +5,7 @@ import os
 import requests
 import discord
 from discord.ext import commands
+from copy import deepcopy
 
 # Load the environment variables
 config = dotenv_values('.env')
@@ -12,7 +13,7 @@ DISCORD_TOKEN = config['DISCORD_TOKEN']
 del config
 
 # Global variables
-DEBUG = True
+DEBUG = False
 COLOR_HELP = 0x42f933
 ERROR_MSG = 'Aucune réponse n\'a été reçue...\n' \
     'Cela peut être dû à une erreur ou à une question trop complexe.'
@@ -54,7 +55,9 @@ def form_help() -> discord.Embed:
         ('!clear', 'pour effacer le chat'),
         ('!help', 'pour afficher cette aide'),
         ('!stop', 'pour arrêter le bot'),
-        ('question', 'pour poser une question au modèle'),
+        ('!quit', 'pour arrêter le bot'),
+        ('!raw <question>', 'pour poser une question au modèle sans contexte'),
+        ('<question>', 'pour poser une question au modèle'),
         ('Exemple', '`How many legs does a cat have?` -> `4`')
     ]
     for name, value in fields:
@@ -81,7 +84,7 @@ def form_message(model: object, message: object) -> str:
                 prompt += f'\n```{f.read()}```'
             os.remove(file)
     if DEBUG:
-        print('Prompt:\n#####\n', prompt, '\n#####')
+        print('Prompt:\n#####\n' + prompt + '\n#####')
     return prompt
 
 
@@ -109,6 +112,18 @@ async def check_clear(message: str) -> bool:
         await message.channel.send(embed=form_help())
         return True
     return False
+
+
+def check_raw(message: str, models: list[object]):
+    """Check if the message is `!raw`."""
+    is_raw = message.content.startswith('!raw')
+    models_copy = deepcopy(models)
+    if is_raw:
+        message.content = message.content.replace('!raw', '').strip()
+    for model in models_copy:
+        if is_raw:
+            model['context'] = ''
+    return message, models_copy
 
 
 async def check_model(message: object, model: object) -> bool:
@@ -175,12 +190,17 @@ async def on_message(message: object) -> None:
     is_clear = await check_clear(message)
     if is_stop or is_help or is_clear:
         return None
+    message, models = check_raw(message, MODELS)
+
+    # Stop unknown commands
+    if message.content.startswith('!'):
+        return None
 
     if DEBUG:
         print('Passed command check')
 
     # Check models
-    for model in MODELS:
+    for model in models:
         if await check_model(message, model):
             return None
 
